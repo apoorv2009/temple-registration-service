@@ -3,27 +3,39 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 
-class BaseSignupRequest(BaseModel):
-    name: str = Field(..., min_length=2, max_length=100)
-    contact_number: str = Field(..., min_length=10, max_length=20)
-    native_city: str = Field(..., min_length=2, max_length=100)
-    local_area: str = Field(..., min_length=2, max_length=100)
-    occupation: str = Field(..., min_length=2, max_length=100)
-    password: str = Field(..., min_length=8, max_length=128)
+class TempleSubscriptionCreateRequest(BaseModel):
+    user_id: str = Field(..., min_length=3, max_length=32)
+    temple_id: str = Field(..., min_length=3, max_length=20)
+    requester_name: str = Field(..., min_length=2, max_length=100)
 
 
-class SelfSignupRequest(BaseSignupRequest):
-    request_type: Literal["self_service"] = "self_service"
-
-
-class ReferredSignupRequest(BaseSignupRequest):
-    request_type: Literal["referred"] = "referred"
-    requested_by_user_id: str = Field(..., min_length=3, max_length=64)
-
-
-class SignupRequestResponse(BaseModel):
-    request_id: str
+class TempleSubscriptionResponse(BaseModel):
+    subscription_id: str
+    user_id: str
+    temple_id: str
+    temple_name: str
+    requester_name: str
     status: Literal["pending"]
-    request_type: Literal["self_service", "referred"]
-    phase: str = "scaffold"
+    phase: str = "temple_subscription"
 
+
+class TempleSubscriptionItem(BaseModel):
+    subscription_id: str
+    user_id: str
+    temple_id: str
+    temple_name: str
+    requester_name: str
+    status: Literal["pending", "approved", "rejected"]
+    rejection_reason: str | None = None
+    requested_at: str
+    reviewed_at: str | None = None
+    phase: str = "temple_subscription"
+
+
+class TempleSubscriptionListResponse(BaseModel):
+    items: list[TempleSubscriptionItem]
+    phase: str = "temple_subscription"
+
+
+class RejectTempleSubscriptionPayload(BaseModel):
+    reason: str = Field(..., min_length=3, max_length=255)
